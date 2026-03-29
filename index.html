@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EGO Playlist</title>
+    <style>
+        :root {
+            --bg-deep: #05070a;
+            --card-bg: rgba(10, 12, 18, 0.85);
+            --hero-blue: #00f2ff;
+            --villain-red: #ff0055;
+            --neutral-accent: #94a3b8;
+            --text-main: #f8fafc;
+            --text-dim: #94a3b8;
+            --glass-border: rgba(255, 255, 255, 0.1);
+        }
+
+        body {
+            font-family: 'Pretendard', -apple-system, sans-serif;
+            background-color: var(--bg-deep);
+            background-image: 
+                radial-gradient(circle at 10% 10%, rgba(0, 242, 255, 0.05) 0%, transparent 40%),
+                radial-gradient(circle at 90% 90%, rgba(255, 0, 85, 0.08) 0%, transparent 40%),
+                linear-gradient(135deg, #05070a 0%, #0f172a 100%);
+            color: var(--text-main);
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden; 
+        }
+
+        .main-container {
+            display: flex;
+            width: 90%;
+            max-width: 1100px;
+            height: 620px;
+            background: var(--card-bg);
+            backdrop-filter: blur(25px);
+            border: 1px solid var(--glass-border);
+            border-radius: 30px;
+            overflow: hidden;
+            box-shadow: 0 0 50px rgba(0,0,0,0.5), inset 0 0 20px rgba(255,255,255,0.02);
+            position: relative;
+        }
+
+        .main-container::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 4px;
+            background: linear-gradient(90deg, var(--hero-blue), var(--villain-red));
+            z-index: 10;
+        }
+
+        .player-left {
+            flex: 1.2;
+            padding: 50px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            border-right: 1px solid var(--glass-border);
+            background: linear-gradient(180deg, rgba(255,255,255,0.02) 0%, transparent 100%);
+        }
+
+        .album-cover {
+            width: 100%;
+            aspect-ratio: 16/9;
+            background: #000;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6);
+            margin-bottom: 35px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+        }
+
+        .album-cover::after {
+            content: 'EGO CORE DATA';
+            position: absolute;
+            bottom: 10px; right: 15px;
+            font-size: 10px; color: var(--hero-blue);
+            letter-spacing: 2px; opacity: 0.6;
+        }
+
+        .album-cover img { width: 100%; height: 100%; object-fit: cover; filter: contrast(1.1) brightness(0.9); }
+
+        .now-playing-info h2 {
+            margin: 0; font-size: 2rem; font-weight: 800;
+            background: linear-gradient(to right, #fff, #94a3b8);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+
+        .now-playing-info p {
+            color: var(--hero-blue); margin: 10px 0 12px; font-size: 0.9rem; 
+            font-weight: 700; text-transform: uppercase; letter-spacing: 3px;
+        }
+
+        .track-desc {
+            color: var(--text-dim);
+            font-size: 0.95rem; line-height: 1.6;
+            margin-bottom: 30px; min-height: 3.2em;
+            font-style: italic; opacity: 0.8;
+        }
+
+        .audio-controls { width: 100%; }
+        
+        .progress-area {
+            height: 4px; background: rgba(255,255,255,0.05); border-radius: 2px;
+            margin-bottom: 30px; cursor: pointer; position: relative;
+        }
+
+        .progress-bar {
+            height: 100%; background: var(--hero-blue);
+            width: 0%; box-shadow: 0 0 15px var(--hero-blue); border-radius: 2px;
+            transition: width 0.1s linear;
+        }
+
+        .buttons { display: flex; align-items: center; gap: 40px; justify-content: center; }
+
+        .btn {
+            background: none; border: none; color: white; cursor: pointer; font-size: 1.6rem;
+            transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1); opacity: 0.6;
+        }
+        .btn:hover { opacity: 1; transform: translateY(-2px); color: var(--hero-blue); }
+        .play-btn { font-size: 3.5rem; opacity: 1; color: var(--text-main); filter: drop-shadow(0 0 10px rgba(255,255,255,0.2)); }
+
+        .playlist-right {
+            flex: 1;
+            padding: 40px 30px;
+            background: rgba(0, 0, 0, 0.2);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .playlist-header {
+            font-size: 1rem; font-weight: 900; margin-bottom: 25px;
+            padding-bottom: 15px; border-bottom: 1px solid var(--glass-border);
+            color: var(--text-main); letter-spacing: 5px; text-align: center;
+        }
+
+        .track-list {
+            list-style: none; padding: 0; margin: 0;
+            overflow-y: auto; flex-grow: 1;
+        }
+
+        .track-list::-webkit-scrollbar { width: 4px; }
+        .track-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
+
+        .track-item {
+            display: flex; align-items: center; padding: 16px 20px;
+            border-radius: 15px; cursor: pointer; transition: 0.3s;
+            margin-bottom: 10px; background: rgba(255, 255, 255, 0.03);
+            border: 1px solid transparent;
+        }
+
+        .track-item:hover { background: rgba(0, 242, 255, 0.05); border-color: rgba(0, 242, 255, 0.2); }
+
+        .track-item.active {
+            background: rgba(0, 242, 255, 0.1);
+            border: 1px solid rgba(0, 242, 255, 0.3);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .track-number { width: 35px; color: var(--hero-blue); font-weight: 800; font-family: monospace; }
+        .track-title { flex: 1; font-size: 0.95rem; font-weight: 600; letter-spacing: -0.2px; }
+        .track-duration { color: var(--text-dim); font-size: 0.8rem; font-family: monospace; }
+
+        @media (max-width: 768px) {
+            body { height: auto; min-height: 100vh; overflow-y: auto; align-items: flex-start; padding: 20px 0; }
+            .main-container { flex-direction: column; height: auto; width: 94%; }
+            .player-left { flex: unset; padding: 30px; border-right: none; border-bottom: 1px solid var(--glass-border); }
+            .playlist-right { flex: unset; padding: 30px; height: 400px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="main-container">
+    <div class="player-left">
+        <div class="album-cover">
+            <img src="https://raw.githubusercontent.com/deokc/EGO_pl/refs/heads/main/ego01.png" id="mainArt">
+        </div>
+        <div class="now-playing-info">
+            <h2 id="displayTitle">곡을 선택하세요</h2>
+            <p id="displayAlbum">EGO Playlist</p>
+            <div class="track-desc" id="displayDesc">에고 시스템 로딩 중...</div>
+        </div>
+        <div class="audio-controls">
+            <div class="progress-area" id="progressContainer">
+                <div class="progress-bar" id="progressBar"></div>
+            </div>
+            <div class="buttons">
+                <button class="btn" onclick="prevTrack()">&#x23EE;</button>
+                <button class="btn play-btn" id="playBtn" onclick="togglePlay()">&#x23F5;</button>
+                <button class="btn" onclick="nextTrack()">&#x23ED;</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="playlist-right">
+        <div class="playlist-header">LIST OF SONGS</div>
+        <ul class="track-list" id="trackList"></ul>
+    </div>
+</div>
+
+<audio id="mainAudio"></audio>
+
+<script>
+    const playlist = [
+        {
+            title: "히어로라는 이름 아래",
+            link: "https://raw.githubusercontent.com/deokc/EGO_pl/main/%ED%9E%88%EC%96%B4%EB%A1%9C%EB%9D%BC%EB%8A%94%20%EC%9D%B4%EB%A6%84%20%EC%95%84%EB%9E%98_02.mp3",
+            duration: "03:06",
+            desc: "히어로는 제로 바이러스에 잠식 중..."
+        },
+        {
+            title: "우린 알고 있어",
+            link: "https://raw.githubusercontent.com/deokc/EGO_pl/main/%EC%9A%B0%EB%A6%B0%20%EC%95%8C%EA%B3%A0%20%EC%9E%88%EC%96%B4_01.mp3",
+            duration: "02:40",
+            desc: "신디케이트는 알고 있다!"
+        },
+        {
+            title: "칼날",
+            link: "https://raw.githubusercontent.com/deokc/EGO_pl/main/%EC%B9%BC%EB%82%A0_10.mp3",
+            duration: "03:04",
+            desc: "사무라이 검객 요시의 테마곡."
+        },
+        {
+            title: "전부 내 장난감!",
+            link: "https://raw.githubusercontent.com/deokc/EGO_pl/main/%EC%A0%84%EB%B6%80%20%EB%82%B4%20%EC%9E%A5%EB%82%9C%EA%B0%90!_01.mp3",
+            duration: "02:19",
+            desc: "천방지축 얼렁뚱땅 유희 주의자 레카의 테마곡."
+        },
+        {
+            title: "이 도시는",
+            link: "https://raw.githubusercontent.com/deokc/EGO_pl/main/%EC%9D%B4%20%EB%8F%84%EC%8B%9C%EB%8A%94_03.mp3",
+            duration: "01:59",
+            desc: "에셜론 시티란다."
+        }
+    ];
+
+    const audio = document.getElementById('mainAudio');
+    const trackListElem = document.getElementById('trackList');
+    const playBtn = document.getElementById('playBtn');
+    const progressBar = document.getElementById('progressBar');
+    const progressContainer = document.getElementById('progressContainer');
+    const displayTitle = document.getElementById('displayTitle');
+    const displayDesc = document.getElementById('displayDesc');
+
+    let currentIndex = 0;
+
+    function renderPlaylist() {
+        trackListElem.innerHTML = '';
+        playlist.forEach((track, index) => {
+            const li = document.createElement('li');
+            li.className = `track-item ${index === currentIndex ? 'active' : ''}`;
+            li.innerHTML = `
+                <span class="track-number">${String(index + 1).padStart(2, '0')}</span>
+                <span class="track-title">${track.title}</span>
+                <span class="track-duration">${track.duration}</span>
+            `;
+            li.onclick = () => loadTrack(index);
+            trackListElem.appendChild(li);
+        });
+    }
+
+    function loadTrack(index) {
+        currentIndex = index;
+        const track = playlist[index];
+        audio.src = track.link;
+        displayTitle.textContent = track.title;
+        displayDesc.textContent = track.desc;
+        renderPlaylist();
+        audio.play();
+        playBtn.innerHTML = "&#x23F8;";
+        progressBar.style.background = (index % 2 === 1) ? "var(--villain-red)" : "var(--hero-blue)";
+        progressBar.style.boxShadow = (index % 2 === 1) ? "0 0 15px var(--villain-red)" : "0 0 15px var(--hero-blue)";
+    }
+
+    function togglePlay() {
+        if (audio.paused) {
+            if (!audio.src) loadTrack(0);
+            else { audio.play(); playBtn.innerHTML = "&#x23F8;"; }
+        } else {
+            audio.pause();
+            playBtn.innerHTML = "&#x23F5;";
+        }
+    }
+
+    function nextTrack() { currentIndex = (currentIndex + 1) % playlist.length; loadTrack(currentIndex); }
+    function prevTrack() { currentIndex = (currentIndex - 1 + playlist.length) % playlist.length; loadTrack(currentIndex); }
+
+    audio.ontimeupdate = () => {
+        if (!isNaN(audio.duration)) {
+            const pct = (audio.currentTime / audio.duration) * 100;
+            progressBar.style.width = pct + "%";
+        }
+    };
+
+    progressContainer.onclick = (e) => {
+        const width = progressContainer.clientWidth;
+        const clickX = e.offsetX;
+        if (!isNaN(audio.duration)) {
+            audio.currentTime = (clickX / width) * audio.duration;
+        }
+    };
+
+    audio.onended = nextTrack;
+    renderPlaylist();
+</script>
+</body>
+</html>
